@@ -1,0 +1,55 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+{% load seats_remaining %}
+{% block title %} Home {% endblock %}
+{% block extrastylesheet %}
+<link rel="stylesheet" href="{% static 'tickets/css/index.css' %}">
+{% endblock %}
+{% block content %}
+<section class="container">
+  {% if message %}
+
+    <div class="alert alert-dismissible alert-success">
+      <button type="button" class="close" data-dismiss="alert">
+      ×
+      </button>
+      <strong>{{message}}</strong>
+    </div>
+
+{% endif %}
+    <h1>Events</h1>
+      <div class="main_block">
+        {% for concert in concerts %}
+        <article class="card fl-left">
+          <section class="date">
+            <time datetime="23th feb">
+              <span>{{concert.date|date:'d'}}</span><span>{{concert.date|date:'M'}}</span>
+            </time>
+          </section>
+          <section class="card-cont">
+            <small>{{concert.name}}</small>
+            <h3>live in {{concert.veneu.name}}</h3>
+            <div class="even-date">
+             <i class="fa fa-calendar"></i>
+             <time>
+               <span>{{concert.date|date:'M d Y'}}</span>
+               <span>{{concert.date|date:"H, i, s"}}</span>
+             </time>
+            </div>
+            <div class="even-info">
+              <i class="fa fa-map-marker"></i>
+              <p>
+                {{concert.id|seats_remaining}} Seats are left
+              </p>
+            </div>
+            <a href="{% url 'concert' concert.id %}">Book Tickets</a>
+          </section>
+        </article>
+        {% endfor %}
+      
+      </div>
+     
+    </div>
+        
+		
+{% endblock %}

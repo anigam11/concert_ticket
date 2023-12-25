@@ -1,0 +1,181 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+{% load seats_remaining %}
+{% load remaining_seats_in_seattype %}
+{% block title %} Home {% endblock %}
+{% block extrastylesheet %}
+<link rel="stylesheet" href="{% static 'tickets/css/concert.css' %}">
+<link rel="stylesheet" href="{% static 'tickets/css/concert_signup.css' %}">
+{% endblock %}
+{% block content %}
+<div class="modal generic-popup fade bd-example-modal-lg zoom-in" id="payment-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" style="max-width: 1200px" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+          <h5 class="modal-title mx-auto">Card Payment</h5>
+      </div>
+      <div class="modal-body">
+        <div class="row align-items-center mb-1">
+                       
+          <div class="col-md-2 text-left">
+              <p class="text-secondary">Debit Card Number</p>
+          </div>
+          <div class="col-md-6">
+             <input type="text" onchange="add_card_number(this)"  placeholder="Enter card number" class="form-control">
+          </div>
+      </div>
+      </div>
+      <div class="modal-footer border-0 justify-content-between pt-0">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button form="book_ticket_form" type="submit" class="btn btn-success">Pay with card</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal generic-popup fade bd-example-modal-lg zoom-in" id="signup-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" style="max-width: 1200px" role="document">
+    <div class="modal-content">
+      
+      <div class="modal-body">
+        <div class="signup_model_mainblock">
+          <form class = "form_main" id="signup_form" method="POST" action="{% url 'register' %}">
+            {% csrf_token %} 
+          
+            
+            <div class="form-holder login-form active" data-step="1">
+              <h1 class="form-title">SignUp</h1>
+              
+              <div class="form">
+                <div class="sign_subform">
+                  <div class="signup_input"><input class="input input-login input-login-form1 mt-3" type="text" placeholder="Username" name="username" >
+                  </div>
+                  <div class="signup_input"><input class="input input-login input-login-form2 mt-3" type="text" placeholder="Full Name" name="name" ></div>
+                  <div class="signup_input"><input class="input input-login input-login-form3 mt-3" type="email" placeholder="Email" name="email" ></div>
+                  <div class="signup_input"><input class="input input-login input-login-form4 mt-3" type="password" placeholder="Password" name="password" ></div>
+                
+                
+                
+                
+                
+                  <button type="submit" class="submit  form_2_submit submit_button">SignUp</button>
+                
+                  
+                </div>
+                <div style="display: flex; justify-content: center; align-items: center; margin-top: 10px;">
+                  <span style="margin-right: 2px">Already Have an account? </span><a href="{% url 'login' %}"> Login</a>
+                </div>
+                
+              </div>
+            </div>
+            
+          </form>
+        </div>
+        
+      </div>
+      <div class="modal-footer border-0 justify-content-between pt-0">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button form="signup_form" type="submit" class="btn btn-success">Signup</button>
+      </div>
+    </div>
+  </div>
+</div>
+<section class="container">
+    <h1>Event</h1>
+      <div class="main_block">
+        
+        <article class="card fl-left">
+          <section class="date">
+            <time datetime="23th feb">
+              <span>{{concert.date|date:'d'}}</span><span>{{concert.date|date:'M'}}</span>
+            </time>
+          </section>
+          <section class="card-cont">
+            <small>{{concert.name}}</small>
+            <h3>live in {{concert.veneu.name}}</h3>
+            <div class="even-date">
+             <time>
+               <span>{{concert.date|date:'M d Y'}}</span>
+               <span>{{concert.date|date:"H:i:s"}}</span>
+             </time>
+            </div>
+            
+            <div class="even-info">
+              <p>
+                {{concert.id|seats_remaining}} Seats are left
+              </p>
+            </div>
+            {% for type in concert.veneu.seat_types.all %}
+            <div class="even-info ">
+              <p class="text_yellow subheading_text">
+                Total Seats Left in {{type.type_name}} 
+              </p>
+              <p class="price_block" id="remaining_seats{{type.id}}" >
+                {{type.id|remaining_seats_in_seattype:concert.id}} 
+              </p>
+            </div>
+            {% endfor %}
+            <form action="{% url 'book_ticket' concert.id %}" method="post" id="book_ticket_form">
+              {% csrf_token %}
+              <div>
+                <div class="even-info">
+                  <p class="text_yellow subheading_text">
+                    Select Seat Types
+                  </p>
+                </div>
+    
+                <div class="m-5 text-center body select_main_div">
+                  <div class="col-4 mx-auto">
+                
+                    <select class="ddl-select" id="list" name="seat_type_selected" onchange="total_price_calculated()">
+                      
+                      {% for type in concert.veneu.seat_types.all %}
+                      <option value="{{type.id}}">{{type.type_name}} $ {{type.price}} </option>
+                      {% endfor %}
+                    </select>
+                
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="even-info">
+                  <p class="text_yellow subheading_text">
+                    How many seats do you want?
+                  </p>
+                </div>
+    
+                <div class="m-5 text-center body select_main_div">
+                  <div class="col-4 mx-auto">
+                
+                    <input onchange="total_price_calculated()" name="number_of_seats" type="number" value="1" min=1  class="ddl-input" id="number_of_seats">
+                
+                  </div>
+                </div>
+              </div>
+              <input type="text" hidden id="card_number" name="card_number">
+            </form>
+            <div class="even-info ">
+              <p class="text_yellow subheading_text">
+                Total Price
+              </p>
+              <p class="price_block" id="total_price">
+                $ 120
+              </p>
+            </div>
+            {% if user.is_authenticated %}
+            <button type="button" data-toggle="modal" data-target="#payment-modal">Book Tickets</button>
+            {% else %}
+            <button type="button" data-toggle="modal" data-target="#signup-modal">Book Tickets</button>
+            {% endif %}
+          </section>
+        </article>
+        
+      
+      </div>
+     
+    </div>
+        
+		
+{% endblock %}
+{% block extrascript %}
+<script src="{% static 'tickets/js/concert.js' %}"></script>
+{% endblock %}
